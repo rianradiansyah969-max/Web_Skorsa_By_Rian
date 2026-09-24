@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login Portal — SMK N 1 Sukoharjo</title>
+<meta name="description" content="Masuk untuk mengakses sistem portal sekolah SMK N 1 Sukoharjo" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+      },
+    },
+  }
+</script>
+
+<style>
+  :root {
+    --bg: #EEF2F9;
+    --panel: #FFFFFF;
+    --panel-2: #F8FAFC;
+    --ink: #0B1220;
+    --ink-soft: #64748B;
+    --line: #E2E8F0;
+    --blue: #2563EB;
+    --blue-hover: #1D4ED8;
+    --cyan: #0EA5E9;
+  }
+  html.dark {
+    --bg: #070B14;
+    --panel: #101827;
+    --panel-2: #0C1220;
+    --ink: #EAF0FC;
+    --ink-soft: #94A3B8;
+    --line: #1E293B;
+    --blue: #3B82F6;
+    --blue-hover: #2563EB;
+    --cyan: #22D3EE;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background-color .35s ease, color .35s ease;
+  }
+
+  /* Latar Belakang Blueprint Grid */
+  .bg-grid {
+    background-image:
+      radial-gradient(circle, color-mix(in srgb, var(--ink) 12%, transparent) 1px, transparent 1px),
+      linear-gradient(color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px);
+    background-size: 24px 24px, 96px 96px, 96px 96px;
+  }
+
+  /* Animasi Melayang (Floating Effect) */
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+  }
+  .animate-float {
+    animation: floatSlow 5s ease-in-out infinite;
+  }
+
+  /* Pulse Dot Live Status */
+  .live-dot {
+    animation: pulseDot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+
+  /* Typing Font Cursor */
+  .typing-cursor {
+    display: inline-block;
+    width: 3px;
+    background-color: var(--blue);
+    animation: blink 0.75s infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* Frame Corners Khas Gambar Teknik */
+  .frame-corners { position: relative; }
+  .frame-corners .corner { position: absolute; width: 16px; height: 16px; border-color: var(--blue); pointer-events: none; }
+  .corner-tl { top: -1px; left: -1px; border-top: 2.5px solid; border-left: 2.5px solid; border-top-left-radius: .75rem; }
+  .corner-tr { top: -1px; right: -1px; border-top: 2.5px solid; border-right: 2.5px solid; border-top-right-radius: .75rem; }
+  .corner-bl { bottom: -1px; left: -1px; border-bottom: 2.5px solid; border-left: 2.5px solid; border-bottom-left-radius: .75rem; }
+  .corner-br { bottom: -1px; right: -1px; border-bottom: 2.5px solid; border-right: 2.5px solid; border-bottom-right-radius: .75rem; }
+</style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-grid">
+
+  <!-- CARD UTAMA LOGIN (SPLIT LAYOUT) -->
+  <div class="w-full max-w-4xl bg-[var(--panel)] border border-[var(--line)] rounded-3xl shadow-2xl overflow-hidden grid lg:grid-cols-2 transition-colors duration-300">
+
+    <!-- SISI KIRI: ANIMASI ANAK & AJAKAN MENDAFTAR (PPDB HERO) -->
+    <div class="relative bg-gradient-to-br from-blue-600/10 via-cyan-500/5 to-transparent p-8 sm:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[var(--line)] overflow-hidden">
+      
+      <!-- Header Badge Status -->
+      <div class="flex items-center justify-between z-10">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white font-display font-bold flex items-center justify-center text-sm shadow-md group-hover:scale-105 transition">S1</div>
+          <span class="font-display font-bold text-sm tracking-tight">SMK N 1 Sukoharjo</span>
+        </a>
+
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 live-dot"></span>
+          PPDB Online Active
+        </div>
+      </div>
+
+      <!-- Ilustrasi Gambar Anak/Siswa Mengajak Mendaftar -->
+      <div class="my-8 relative z-10">
+        <div class="frame-corners animate-float rounded-2xl overflow-hidden border border-[var(--line)] shadow-xl bg-[var(--panel)] p-2">
+          <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+          <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+          
+          <div class="relative h-52 sm:h-60 rounded-xl overflow-hidden">
+            <img src="/img/PPDB.jpg" alt="Ayo Mendaftar SMK N 1 Sukoharjo" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-white">
+              <span class="bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md w-fit mb-1">Pendaftaran Terbuka</span>
+              <p class="font-display font-bold text-base leading-snug">Raih Keahlian Vokasi Standar Industri!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teks Animasi Ajak Mendaftar (Typing Effect) -->
+      <div class="z-10">
+        <h3 class="font-display text-xl sm:text-2xl font-bold leading-tight min-h-[56px]">
+          <span id="login-invite-text" class="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent"></span><span class="typing-cursor">&nbsp;</span>
+        </h3>
+        <p class="text-xs text-[var(--ink-soft)] mt-2 leading-relaxed">
+          Belum punya akun? Silakan hubungi Panitia PPDB atau gunakan tombol kembali ke landing page untuk informasi lengkap.
+        </p>
+      </div>
+
+      <!-- Pattern Dekorasi Bulat -->
+      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    </div>
+
+    <!-- SISI KANAN: FORM LOGIN PRESISI -->
+    <div class="p-8 sm:p-10 flex flex-col justify-center">
+      
+      <!-- Header Form Login -->
+      <div class="text-center mb-8">
+        <div class="w-12 h-12 bg-blue-600 text-white rounded-2xl mx-auto flex items-center justify-center font-display font-bold text-xl mb-3 shadow-lg shadow-blue-500/30">
+          S
+        </div>
+        <h1 class="font-display text-2xl font-bold tracking-tight">Selamat Datang</h1>
+        <p class="text-xs text-[var(--ink-soft)] mt-1">Masuk untuk mengakses sistem portal sekolah</p>
+      </div>
+
+      <!-- Pesan Error Login (Jika Ada) -->
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs p-3.5 rounded-xl mb-6 text-center font-medium">
+          <%= error %>
+        </div>
+      <% } %>
+
+      <!-- Form Inputs -->
+      <form action="/login" method="POST" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-[var(--ink)] mb-2">Username</label>
+          <input type="text" name="username" placeholder="Masukkan 'admin'" required
+            class="w-full bg-[var(--panel-2)] border border-[var(--line)] text-[var(--ink)] text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition placeholder-[var(--ink-soft)]/50">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[var(--ink)] mb-2">Password</label>
+          <input type="password" name="password" placeholder="Masukkan 'admin123'" required
+            class="w-full bg-[var(--panel-2)] border border-[var(--line)] text-[var(--ink)] text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition placeholder-[var(--ink-soft)]/50">
+        </div>
+
+        <button type="submit" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-3.5 rounded-xl shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0">
+          Masuk Portal
+        </button>
+      </form>
+
+      <!-- Footer Info Akun Percobaan -->
+      <div class="mt-8 p-3.5 bg-[var(--panel-2)] rounded-xl border border-[var(--line)] text-center">
+        <p class="text-[11px] text-[var(--ink-soft)]">
+          Akun percobaan: <b class="text-[var(--ink)]">admin</b> / <b class="text-[var(--ink)]">admin123</b>
+        </p>
+      </div>
+
+      <!-- Kembali ke Beranda -->
+      <div class="mt-6 text-center">
+        <a href="/" class="text-xs font-semibold text-blue-500 hover:underline inline-flex items-center gap-1">
+          &larr; Kembali ke Landing Page
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SCRIPT ANIMASI TYPING EFEK -->
+  <script>
+    const invitePhrases = [
+      "Yuk, Mendaftar Sekarang!",
+      "Siapkan Dirimu Jadi Ahli Vokasi!",
+      "Wujudkan Impianmu Bersama Kami!"
+    ];
+    let partIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    const inviteAnim = document.getElementById('login-invite-text');
+
+    function typeInviteEffect() {
+      if (!inviteAnim) return;
+      const currentPhrase = invitePhrases[partIndex];
+      
+      if (isDeleting) {
+        inviteAnim.textContent = currentPhrase.substring(0, charIndex - 1);
+        charIndex--;
+      } else {
+        inviteAnim.textContent = currentPhrase.substring(0, charIndex + 1);
+        charIndex++;
+      }
+
+      let speed = isDeleting ? 35 : 75;
+
+      if (!isDeleting && charIndex === currentPhrase.length) {
+        speed = 2200; // Tahan teks selama 2.2 detik
+        isDeleting = true;
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        partIndex = (partIndex + 1) % invitePhrases.length;
+        speed = 400;
+      }
+
+      setTimeout(typeInviteEffect, speed);
+    }
+
+    document.addEventListener("DOMContentLoaded", typeInviteEffect);
+  </script>
+</body>
+</html>

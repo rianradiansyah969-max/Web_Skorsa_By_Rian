@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id" class="dark scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title><%= typeof schoolName !== 'undefined' ? schoolName : 'SMK N 1 Sukoharjo' %> — Portal Sekolah</title>
+<meta name="description" content="Portal resmi SMK N 1 Sukoharjo — mewujudkan generasi terampil, berkarakter, dan inovatif." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  }
+</script>
+
+<style>
+  /* ANIMASI BINTANG & BINTANG JATUH (MODE MALAM) */
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  .star {
+    position: absolute;
+    background-color: #ffffff;
+    border-radius: 50%;
+    animation: twinkle var(--duration, 3s) infinite ease-in-out;
+  }
+
+  @keyframes shootingStar {
+    0% { transform: translateX(0) translateY(0) rotate(-45deg) scale(0); opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: translateX(-500px) translateY(500px) rotate(-45deg) scale(1); opacity: 0; }
+  }
+  .shooting-star {
+    position: absolute; width: 120px; height: 2px;
+    background: linear-gradient(90deg, #ffffff, transparent);
+    animation: shootingStar 4s infinite ease-in-out; opacity: 0;
+  }
+
+  /* ANIMASI MATAHARI & AWAN (MODE SIANG) */
+  @keyframes sunPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+  .sun-glow {
+    position: absolute; top: -100px; right: -100px; width: 450px; height: 450px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%; animation: sunPulse 6s infinite ease-in-out; pointer-events: none;
+  }
+
+  @keyframes floatClouds {
+    0% { transform: translateX(-10%); }
+    50% { transform: translateX(10%); }
+    100% { transform: translateX(-10%); }
+  }
+  .cloud {
+    position: absolute; background: rgba(255, 255, 255, 0.6);
+    filter: blur(20px); border-radius: 50%;
+    animation: floatClouds 25s infinite ease-in-out;
+  }
+
+  /* TILT CARD & TYPING CURSOR */
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float { animation: floatSlow 4s ease-in-out infinite; }
+
+  .tilt-card-wrapper { perspective: 1000px; }
+  .tilt-card { transition: transform 0.15s ease-out, box-shadow 0.3s ease; transform-style: preserve-3d; }
+
+  .typing-cursor {
+    display: inline-block; width: 3px; background-color: #38bdf8;
+    animation: blink 0.75s infinite; margin-left: 2px;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .live-dot { animation: livePulse 1.8s ease-in-out infinite; }
+  @keyframes livePulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+  .reveal.active { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+
+<body class="font-body bg-slate-50 text-slate-800 dark:bg-[#070A12] dark:text-slate-100 transition-colors duration-500 overflow-x-hidden relative min-h-screen">
+
+  <!-- DYNAMIC BACKGROUND EFFECT -->
+  <div id="nightEffects" class="fixed inset-0 pointer-events-none z-0 hidden dark:block overflow-hidden">
+    <div class="shooting-star" style="top: 15%; right: 20%; animation-delay: 0s;"></div>
+    <div class="shooting-star" style="top: 35%; right: 40%; animation-delay: 2.5s;"></div>
+    <div class="shooting-star" style="top: 10%; right: 60%; animation-delay: 5s;"></div>
+    <div id="starsContainer"></div>
+  </div>
+
+  <div id="dayEffects" class="fixed inset-0 pointer-events-none z-0 block dark:hidden overflow-hidden">
+    <div class="sun-glow"></div>
+    <div class="absolute top-6 right-10 w-24 h-24 bg-amber-300 rounded-full blur-sm opacity-80 shadow-[0_0_80px_rgba(251,191,36,0.8)]"></div>
+    <div class="cloud w-96 h-32 top-12 left-10" style="animation-delay: 0s;"></div>
+    <div class="cloud w-[500px] h-40 top-40 right-1/4" style="animation-delay: -5s;"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-[#070A12]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 h-[72px] flex items-center justify-between relative z-10">
+      <a href="#top" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center font-display font-bold text-white text-lg shadow-md">S1</div>
+        <div class="leading-tight">
+          <p class="font-display font-semibold text-[15px] text-slate-900 dark:text-white"><%= typeof schoolName !== 'undefined' ? schoolName : 'SMK N 1 Sukoharjo' %></p>
+          <p class="text-[11px] tracking-wide text-slate-500 dark:text-slate-400">Portal Vokasi Resmi</p>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+        <a href="#program" class="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Program Keahlian</a>
+        <a href="#berita" class="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Berita API</a>
+        <a href="#sambutan-ppdb" class="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">PPDB</a>
+        <a href="#kartu-pelajar" class="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Kartu Pelajar</a>
+        <a href="#kontak" class="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Kontak</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="flex items-center gap-2 px-3.5 py-2 rounded-full border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-amber-300 hover:scale-105 transition duration-300 shadow-sm" title="Beralih Mode Siang / Malam">
+          <svg id="sunIcon" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg id="moonIcon" class="w-4 h-4 block dark:hidden text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+          <span id="themeLabel" class="text-xs font-semibold">Mode Siang</span>
+        </button>
+
+        <a href="/login" class="inline-flex bg-gradient-to-r from-blue-600 to-cyan-500 hover:brightness-110 text-white text-sm font-semibold px-6 py-2.5 rounded-full shadow-lg transition">Masuk Portal</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section id="top" class="relative overflow-hidden z-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-12 pb-20 lg:pt-16 lg:pb-28 relative grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 text-xs font-semibold tracking-wide px-3.5 py-1.5 rounded-full border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 mb-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+          Portal Resmi &middot; Kabupaten Sukoharjo
+        </div>
+
+        <h1 class="font-display text-[2.6rem] leading-[1.08] sm:text-6xl font-bold tracking-tight min-h-[140px] text-slate-900 dark:text-white">
+          Mewujudkan generasi <br/>
+          <span id="hero-typing-text" class="bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-500 dark:from-blue-400 dark:via-sky-300 dark:to-cyan-400 bg-clip-text text-transparent"></span><span class="typing-cursor">&nbsp;</span>
+        </h1>
+
+        <p class="mt-6 text-[17px] leading-relaxed text-slate-600 dark:text-slate-400 max-w-lg">
+          SMK N 1 Sukoharjo membekali siswa dengan kompetensi teknologi terapan dan kesiapan kerja abad 21, lewat lima program keahlian unggulan yang dirancang bersama dunia industri.
+        </p>
+
+        <div class="mt-9 flex flex-wrap items-center gap-4">
+          <a href="#program" class="bg-gradient-to-r from-blue-600 to-cyan-500 hover:brightness-110 text-white font-semibold text-[15px] px-7 py-3.5 rounded-full shadow-md transition transform hover:-translate-y-0.5">Jelajahi Program Keahlian</a>
+          <a href="#sambutan-ppdb" class="border border-slate-300 dark:border-slate-700 hover:border-cyan-500 text-slate-700 dark:text-slate-200 font-semibold text-[15px] px-7 py-3.5 rounded-full transition bg-white/50 dark:bg-transparent">Info PPDB</a>
+        </div>
+
+        <div class="mt-14 grid grid-cols-3 gap-6 max-w-md border-t border-slate-300 dark:border-slate-800 pt-7">
+          <div>
+            <p class="font-display text-2xl font-bold text-slate-900 dark:text-white"><span class="counter" data-target="1240">1240</span>+</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Siswa aktif</p>
+          </div>
+          <div>
+            <p class="font-display text-2xl font-bold text-slate-900 dark:text-white"><span class="counter" data-target="5">5</span></p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Kompetensi keahlian</p>
+          </div>
+          <div>
+            <p class="font-display text-2xl font-bold text-slate-900 dark:text-white"><span class="counter" data-target="96">96</span>%</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Keterserapan alumni</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative h-[420px] sm:h-[480px]">
+        <div class="animate-float absolute top-0 right-0 w-[72%] h-[62%] rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-200 dark:border-slate-800 group">
+          <img src="/img/2.jpg" alt="Gedung utama SMK N 1 Sukoharjo" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+        </div>
+
+        <div class="animate-float absolute bottom-0 left-0 w-[54%] h-[46%] rounded-2xl overflow-hidden shadow-xl border-2 border-slate-200 dark:border-slate-800 group" style="animation-delay: 1.2s;">
+          <img src="/img/1.jpg" alt="Praktik siswa di laboratorium" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+        </div>
+
+        <div class="animate-float absolute bottom-8 right-6 w-[38%] h-[34%] rounded-2xl overflow-hidden shadow-xl bg-slate-900 border-2 border-slate-200 dark:border-slate-800 group" style="animation-delay: 2.4s;">
+          <img src="/img/3.jpg" alt="Kegiatan siswa di sekolah" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION KARTU PELAJAR DIGITAL -->
+  <section id="kartu-pelajar" class="py-20 border-y border-slate-200 dark:border-slate-800/80 relative overflow-hidden z-10 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+      <div class="space-y-6">
+        <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+          </span>
+          Identitas Siswa Digital Terverifikasi
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+          Kartu Pelajar Digital <br/>
+          <span class="bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-500 dark:from-blue-400 dark:via-sky-300 dark:to-cyan-400 bg-clip-text text-transparent">SMK Negeri 1 Sukoharjo</span>
+        </h2>
+
+        <p class="text-slate-600 dark:text-slate-400 text-base leading-relaxed max-w-lg">
+          Dilengkapi integrasi Chip RFID & QR Code presensi presisi tinggi. Akses perpustakaan digital, data akademis, dan portofolio keahlian siswa dalam satu kartu pintar interaktif.
+        </p>
+
+        <div class="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 space-y-2 max-w-md shadow-sm backdrop-blur-sm">
+          <div class="flex items-center gap-2 font-semibold text-blue-600 dark:text-cyan-400">
+            <span>💡 Efek Interaktif 3D:</span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 leading-normal">
+            Gerakkan kursor/tetikus Anda di atas kartu untuk melihat efek animasi tiga dimensi (<span class="text-slate-900 dark:text-white font-medium">Tilt Effect</span>).
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center justify-center pt-4">
+        <div class="flex flex-col items-center -mb-3 z-30 pointer-events-none">
+          <div class="w-20 h-10 border-t-8 border-x-8 border-blue-600 rounded-t-xl shadow-lg"></div>
+          <div class="w-10 h-4 bg-gradient-to-b from-slate-300 to-slate-500 dark:from-slate-400 dark:to-slate-600 rounded-sm border border-slate-300 shadow"></div>
+          <div class="w-6 h-5 bg-slate-100 dark:bg-slate-200 border-2 border-slate-400 rounded-full -mt-2 shadow-inner"></div>
+        </div>
+
+        <div class="tilt-card-wrapper z-20">
+          <div id="interactiveTiltCard" class="tilt-card relative w-[275px] h-[430px] shadow-2xl rounded-2xl overflow-hidden border-2 border-slate-300 dark:border-slate-700/80 bg-slate-950">
+            <img src="/img/rian.jpg" onerror="this.src='/img/2.jpg'" alt="Foto Rian Radiansyah" class="absolute inset-0 w-full h-full object-cover object-center" />
+
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950/95 flex flex-col justify-end p-3.5 pointer-events-none">
+              <div class="bg-slate-950/85 backdrop-blur-md border border-white/10 p-3 rounded-xl text-white space-y-1 shadow-xl">
+                <div class="flex justify-between items-center text-[7.5px] font-mono text-cyan-400 font-bold">
+                  <span>NAMA SISWA</span>
+                  <span class="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">AKTIF</span>
+                </div>
+
+                <h3 class="font-display font-bold text-xs sm:text-sm text-white leading-tight uppercase tracking-wide pt-0.5">RIAN RADIANSYAH</h3>
+                <p class="font-mono text-[8.5px] text-slate-300">XII REKAYASA PERANGKAT LUNAK 3</p>
+
+                <div class="pt-1.5 border-t border-white/10 flex justify-between items-center text-[7.5px]">
+                  <span class="text-blue-300 font-semibold">Junior Web Developer</span>
+                  <span class="font-mono text-slate-400 font-medium">2026/2027</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION BARU: BERITA API CNN INDONESIA -->
+  <section id="berita" class="py-24 border-b border-slate-200 dark:border-slate-800 z-10 relative reveal">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-blue-600 dark:text-cyan-400 bg-blue-500/10 dark:bg-cyan-500/10 px-3.5 py-1.5 rounded-full border border-blue-500/20 dark:border-cyan-500/20">
+            📡 Live API News Feed
+          </span>
+          <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mt-3">
+            Berita &amp; Informasi Terkini
+          </h2>
+          <p class="text-slate-600 dark:text-slate-400 text-sm mt-2">
+            Informasi nasional &amp; wawasan terkini diambil langsung melalui API CNN Indonesia.
+          </p>
+        </div>
+
+        <button onclick="fetchNews()" class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-blue-500 dark:hover:border-cyan-400 transition shadow-sm">
+          <span>🔄 Muat Ulang Berita</span>
+        </button>
+      </div>
+
+      <!-- GRID CONTAINER BERITA API -->
+      <div id="newsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Skeleton Loader Saat Memuat Berita -->
+        <div class="animate-pulse bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 h-80"></div>
+        <div class="animate-pulse bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 h-80"></div>
+        <div class="animate-pulse bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 h-80"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRAM KEAHLIAN -->
+  <section id="program" class="py-24 border-b border-slate-200 dark:border-slate-800 z-10 relative reveal">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10">
+      <div class="max-w-xl mb-14">
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Program keahlian</h2>
+        <p class="text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">Kompetensi keahlian yang disusun mengikuti kebutuhan industri, dengan kurikulum berbasis proyek nyata.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:border-blue-500/50 dark:hover:border-cyan-500/50 transition backdrop-blur-sm">
+          <h3 class="font-display font-semibold text-base text-slate-900 dark:text-white">Rekayasa Perangkat Lunak</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Pengembangan aplikasi web, mobile, dan basis data.</p>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:border-blue-500/50 dark:hover:border-cyan-500/50 transition backdrop-blur-sm">
+          <h3 class="font-display font-semibold text-base text-slate-900 dark:text-white">Akuntansi &amp; Keuangan Lembaga</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Pencatatan keuangan, perbankan, dan praktik akuntansi digital.</p>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:border-blue-500/50 dark:hover:border-cyan-500/50 transition backdrop-blur-sm">
+          <h3 class="font-display font-semibold text-base text-slate-900 dark:text-white">Kuliner (Tata Boga)</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Seni pengolahan hidangan nusantara, internasional, dan manajemen pastry.</p>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:border-blue-500/50 dark:hover:border-cyan-500/50 transition backdrop-blur-sm">
+          <h3 class="font-display font-semibold text-base text-slate-900 dark:text-white">Teknik &amp; Bisnis Sepeda Motor</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Perawatan, mesin injeksi modern, dan manajemen bengkel otomotif.</p>
+        </div>
+        <div class="bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:border-blue-500/50 dark:hover:border-cyan-500/50 transition backdrop-blur-sm">
+          <h3 class="font-display font-semibold text-base text-slate-900 dark:text-white">Teknik Instalasi Tenaga Listrik</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Instalasi listrik penerangan, kontrol motor industri berbasis PLC, dan energi terbarukan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAMBUTAN PPDB -->
+  <section id="sambutan-ppdb" class="py-24 relative overflow-hidden z-10 reveal">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 live-dot"></span>
+          Pendaftaran PPDB Resmi Dibuka
+        </div>
+
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight leading-tight min-h-[90px] text-slate-900 dark:text-white">
+          <span id="ppdb-typing-text" class="bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent"></span><span class="typing-cursor">&nbsp;</span>
+        </h2>
+
+        <p class="text-slate-600 dark:text-slate-400 mt-4 leading-relaxed max-w-lg text-[15px]">
+          Berminat mendaftar? Kami mengundang lulusan SMP/MTs sederajat untuk bergabung bersama <b><%= typeof schoolName !== 'undefined' ? schoolName : 'SMK N 1 Sukoharjo' %></b>.
+        </p>
+
+        <div class="mt-8">
+          <a href="/login" class="bg-gradient-to-r from-blue-600 to-cyan-500 hover:brightness-110 text-white font-bold text-sm px-7 py-3.5 rounded-full shadow-lg transition inline-block">
+            Daftar PPDB Sekarang &rarr;
+          </a>
+        </div>
+      </div>
+
+      <div class="rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3">
+        <div class="relative rounded-xl overflow-hidden">
+          <img src="/img/3.jpg" alt="Sambutan PPDB SMK N 1 Sukoharjo" class="w-full h-[380px] object-cover" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="kontak" class="py-12 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 z-10 relative">
+    &copy; <%= new Date().getFullYear() %> SMK N 1 Sukoharjo. Seluruh hak cipta dilindungi.
+  </footer>
+
+  <!-- SCRIPT ANIMASI, THEME TOGGLE, & FETCH API NEWS -->
+  <script>
+    // FUNGSI FETCH BERITA DARI API CNN INDONESIA
+    async function fetchNews() {
+      const newsGrid = document.getElementById('newsGrid');
+      if (!newsGrid) return;
+
+      // Loading State
+      newsGrid.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p class="text-xs text-slate-400 font-mono">Mengambil data berita dari API CNN Indonesia...</p>
+        </div>
+      `;
+
+      try {
+        const apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https://www.cnnindonesia.com/nasional/rss';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.status === 'ok' && data.items.length > 0) {
+          newsGrid.innerHTML = ''; // Clear loading
+
+          // Tampilkan 6 berita terbaru
+          data.items.slice(0, 6).forEach(item => {
+            const pubDate = new Date(item.pubDate).toLocaleDateString('id-ID', {
+              day: 'numeric', month: 'short', year: 'numeric'
+            });
+
+            // Ambil gambar dari enclosure atau deskripsi
+            let imageUrl = item.enclosure?.link || item.thumbnail || '/img/2.jpg';
+
+            const card = document.createElement('div');
+            card.className = "bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-500/50 dark:hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between backdrop-blur-sm group";
+
+            card.innerHTML = `
+              <div>
+                <div class="relative h-44 overflow-hidden bg-slate-950">
+                  <img src="${imageUrl}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='/img/2.jpg'" />
+                  <span class="absolute top-3 left-3 bg-blue-600/90 text-white text-[9px] font-mono font-bold px-2.5 py-1 rounded-full backdrop-blur-md">
+                    CNN NASIONAL
+                  </span>
+                </div>
+                <div class="p-5">
+                  <span class="text-[10px] font-mono text-slate-400">${pubDate}</span>
+                  <h3 class="font-bold text-sm text-slate-900 dark:text-white mt-1.5 line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition">
+                    ${item.title}
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                    ${item.description.replace(/<[^>]*>?/gm, '')}
+                  </p>
+                </div>
+              </div>
+              <div class="p-5 pt-0">
+                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline">
+                  Baca Selengkapnya &rarr;
+                </a>
+              </div>
+            `;
+
+            newsGrid.appendChild(card);
+          });
+        } else {
+          newsGrid.innerHTML = `<p class="col-span-full text-center text-xs text-rose-500 py-6">Gagal memuat berita dari server API.</p>`;
+        }
+      } catch (err) {
+        console.error('Error fetching news:', err);
+        newsGrid.innerHTML = `<p class="col-span-full text-center text-xs text-rose-500 py-6">Terjadi kesalahan koneksi saat memuat berita API.</p>`;
+      }
+    }
+
+    // GENERATE BINTANG KERLIP UNTUK MODE MALAM
+    function generateStars() {
+      const container = document.getElementById('starsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < 70; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+        container.appendChild(star);
+      }
+    }
+
+    // TOGGLE THEME (SIANG / MALAM)
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeLabel = document.getElementById('themeLabel');
+
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        if(themeLabel) themeLabel.textContent = 'Mode Siang';
+      } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        if(themeLabel) themeLabel.textContent = 'Mode Malam';
+      }
+    }
+
+    (function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const themeLabel = document.getElementById('themeLabel');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        if(themeLabel) themeLabel.textContent = 'Mode Siang';
+      } else {
+        document.documentElement.classList.add('dark');
+        if(themeLabel) themeLabel.textContent = 'Mode Malam';
+      }
+    })();
+
+    // TILT CARD 3D
+    const tiltCard = document.getElementById('interactiveTiltCard');
+    if (tiltCard) {
+      const wrapper = tiltCard.parentElement;
+      wrapper.addEventListener('mousemove', (e) => {
+        const rect = wrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -18;
+        const rotateY = ((x - centerX) / centerX) * 18;
+        tiltCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+      });
+      wrapper.addEventListener('mouseleave', () => {
+        tiltCard.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+      });
+    }
+
+    // Counter Animation
+    function animateCounters() {
+      const counters = document.querySelectorAll('.counter');
+      counters.forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'), 10);
+        if (isNaN(target)) return;
+        const duration = 1500;
+        const start = performance.now();
+        function step(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          el.textContent = Math.floor(progress * target);
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = target;
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    // Typing Effect Hero
+    const heroPhrases = ["terampil, berkarakter,", "dan inovatif.", "siap kerja mandiri."];
+    let hPart = 0, hChar = 0, hDeleting = false;
+    const heroAnim = document.getElementById('hero-typing-text');
+    function typeHero() {
+      if (!heroAnim) return;
+      const current = heroPhrases[hPart];
+      heroAnim.textContent = hDeleting ? current.substring(0, hChar - 1) : current.substring(0, hChar + 1);
+      hChar += hDeleting ? -1 : 1;
+      let spd = hDeleting ? 40 : 90;
+      if (!hDeleting && hChar === current.length) { spd = 2000; hDeleting = true; }
+      else if (hDeleting && hChar === 0) { hDeleting = false; hPart = (hPart + 1) % heroPhrases.length; spd = 400; }
+      setTimeout(typeHero, spd);
+    }
+
+    // Typing Effect PPDB
+    const ppdbPhrases = ["Berminat Mendaftar PPDB?", "Wujudkan Masa Depan Cemerlangmu!", "Bergabung Bersama SMK N 1 Sukoharjo!"];
+    let pPart = 0, pChar = 0, pDeleting = false;
+    const ppdbAnim = document.getElementById('ppdb-typing-text');
+    function typePpdb() {
+      if (!ppdbAnim) return;
+      const current = ppdbPhrases[pPart];
+      ppdbAnim.textContent = pDeleting ? current.substring(0, pChar - 1) : current.substring(0, pChar + 1);
+      pChar += pDeleting ? -1 : 1;
+      let spd = pDeleting ? 30 : 70;
+      if (!pDeleting && pChar === current.length) { spd = 2200; pDeleting = true; }
+      else if (pDeleting && pChar === 0) { pDeleting = false; pPart = (pPart + 1) % ppdbPhrases.length; spd = 500; }
+      setTimeout(typePpdb, spd);
+    }
+
+    // Scroll Reveal
+    function revealOnScroll() {
+      const reveals = document.querySelectorAll('.reveal');
+      reveals.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight - 100) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      generateStars();
+      animateCounters();
+      typeHero();
+      typePpdb();
+      fetchNews(); // Panggil API Berita CNN saat diload
+      revealOnScroll();
+      window.addEventListener('scroll', revealOnScroll);
+    });
+  </script>
+
+</body>
+</html>

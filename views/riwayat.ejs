@@ -1,0 +1,629 @@
+<%
+  var transaksi = typeof transaksi !== 'undefined' ? transaksi : [];
+  var stats = typeof stats !== 'undefined' ? stats : { total: 0, dipinjam: 0, dikembalikan: 0, terlambat: 0 };
+  var distribusiStatus = typeof distribusiStatus !== 'undefined' ? distribusiStatus : [];
+  var aktivitasBulanan = typeof aktivitasBulanan !== 'undefined' ? aktivitasBulanan : [];
+%>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Riwayat Peminjaman Digital - SMK Negeri 1 Sukoharjo</title>
+
+<!-- Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<style>
+  :root{
+    --bg-1:#0b1120;
+    --bg-2:#0f172a;
+    --glass:rgba(255,255,255,0.06);
+    --glass-strong:rgba(255,255,255,0.10);
+    --glass-border:rgba(255,255,255,0.14);
+    --primary:#6366f1;
+    --primary-2:#818cf8;
+    --accent:#38bdf8;
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#f43f5e;
+    --text-main:#e5e7eb;
+    --text-dim:#94a3b8;
+    --radius-lg:22px;
+    --radius-md:16px;
+    --shadow-soft: 0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Poppins', sans-serif;
+    color:var(--text-main);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(99,102,241,0.25), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(56,189,248,0.18), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(129,140,248,0.15), transparent 50%),
+      linear-gradient(160deg, var(--bg-1), var(--bg-2));
+    background-attachment: fixed;
+    overflow-x:hidden;
+  }
+
+  /* Light mode override */
+  body.light-mode {
+    --bg-1:#f1f5f9;
+    --bg-2:#e2e8f0;
+    --glass:rgba(255,255,255,0.7);
+    --glass-strong:rgba(255,255,255,0.85);
+    --glass-border:rgba(0,0,0,0.08);
+    --text-main:#0f172a;
+    --text-dim:#64748b;
+    --shadow-soft: 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  .orb{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(80px);
+    opacity:0.35;
+    z-index:0;
+    animation: float 12s ease-in-out infinite;
+  }
+  .orb1{ width:320px; height:320px; background:var(--primary); top:-80px; left:-80px; }
+  .orb2{ width:280px; height:280px; background:var(--accent); bottom:-100px; right:-60px; animation-delay:3s; }
+  .orb3{ width:220px; height:220px; background:#a78bfa; top:40%; right:20%; animation-delay:6s; }
+
+  @keyframes float{
+    0%,100%{ transform: translateY(0) translateX(0); }
+    50%{ transform: translateY(-30px) translateX(20px); }
+  }
+
+  .wrapper{ position:relative; z-index:1; max-width:1280px; margin:0 auto; padding:28px 24px 60px; }
+
+  /* NAVBAR */
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius-lg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--shadow-soft);
+    opacity:0;
+    animation: fadeSlideDown .6s ease forwards;
+  }
+  .navbar-left{ display:flex; align-items:center; gap:14px; }
+  .navbar-logo{
+    width:44px; height:44px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--primary), var(--accent));
+    font-weight:700; font-size:18px; color:#fff;
+    box-shadow:0 6px 18px rgba(99,102,241,0.45);
+  }
+  .navbar-title{ font-weight:600; font-size:16px; line-height:1.2; }
+  .navbar-sub{ font-size:12.5px; color:var(--text-dim); }
+  .navbar-right{ display:flex; align-items:center; gap:10px; }
+
+  .icon-btn{
+    width:40px; height:40px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    color:var(--text-main);
+    cursor:pointer;
+    transition: all .25s ease;
+  }
+  .icon-btn:hover{ background:var(--glass-strong); transform: translateY(-2px); }
+
+  .btn-back{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 18px;
+    border-radius:999px;
+    background:linear-gradient(135deg, var(--primary), var(--primary-2));
+    color:#fff; font-size:13.5px; font-weight:500;
+    text-decoration:none;
+    border:none; cursor:pointer;
+    box-shadow:0 8px 20px rgba(99,102,241,0.35);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .btn-back:hover{ transform: translateY(-2px); box-shadow:0 12px 26px rgba(99,102,241,0.5); }
+
+  /* HEADER */
+  .page-header{
+    margin-top:34px;
+    opacity:0;
+    animation: fadeSlideUp .6s ease .1s forwards;
+  }
+  .page-header h1{
+    display:flex; align-items:center; gap:12px;
+    font-size:26px; font-weight:700; margin:0 0 6px;
+  }
+  .page-header p{ color:var(--text-dim); margin:0; font-size:14px; }
+  .header-icon{
+    width:42px; height:42px; border-radius:14px;
+    background:var(--glass); border:1px solid var(--glass-border);
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(10px);
+    color:var(--accent);
+  }
+
+  /* STAT CARDS */
+  .stats-grid{
+    margin-top:26px;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:18px;
+  }
+  @media (max-width: 900px){ .stats-grid{ grid-template-columns:repeat(2,1fr);} }
+  @media (max-width: 520px){ .stats-grid{ grid-template-columns:1fr;} }
+
+  .stat-card{
+    position:relative;
+    padding:20px 22px;
+    border-radius:var(--radius-md);
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-soft);
+    overflow:hidden;
+    opacity:0;
+    transform: translateY(16px);
+    animation: fadeSlideUp .55s ease forwards;
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  .stat-card:hover{
+    transform: translateY(-6px);
+    border-color: rgba(255,255,255,0.28);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+  }
+  .stat-card:nth-child(1){ animation-delay:.15s; }
+  .stat-card:nth-child(2){ animation-delay:.25s; }
+  .stat-card:nth-child(3){ animation-delay:.35s; }
+  .stat-card:nth-child(4){ animation-delay:.45s; }
+
+  .stat-card::before{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(255,255,255,0.08), transparent 60%);
+    pointer-events:none;
+  }
+  .stat-label{ font-size:13px; color:var(--text-dim); margin-bottom:8px; }
+  .stat-value{ font-size:32px; font-weight:700; }
+  .stat-value.blue{ color:#818cf8; }
+  .stat-value.amber{ color:var(--warning); }
+  .stat-value.green{ color:var(--success); }
+  .stat-value.rose{ color:var(--danger); }
+
+  /* CHART CARDS */
+  .charts-grid{
+    margin-top:22px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  @media (max-width: 900px){ .charts-grid{ grid-template-columns:1fr; } }
+
+  .glass-card{
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius-lg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--shadow-soft);
+    padding:22px;
+    opacity:0;
+    transform: translateY(18px);
+    animation: fadeSlideUp .6s ease forwards;
+  }
+  .charts-grid .glass-card:nth-child(1){ animation-delay:.2s; }
+  .charts-grid .glass-card:nth-child(2){ animation-delay:.32s; }
+
+  .glass-card h3{ margin:0 0 2px; font-size:16px; font-weight:600; }
+  .glass-card .card-sub{ font-size:12.5px; color:var(--text-dim); margin-bottom:14px; }
+  .chart-holder{ position:relative; height:260px; }
+  .empty-chart{
+    height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:var(--text-dim); font-size:13px; gap:8px;
+  }
+
+  /* TABLE CARD */
+  .table-card{
+    margin-top:22px;
+    opacity:0;
+    transform: translateY(18px);
+    animation: fadeSlideUp .6s ease .4s forwards;
+  }
+  .table-toolbar{
+    display:flex; gap:14px; flex-wrap:wrap; margin-bottom:18px;
+  }
+  .search-box{
+    flex:1; min-width:220px;
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    padding:10px 14px;
+    transition: border-color .25s ease, background .25s ease;
+  }
+  .search-box:focus-within{ border-color:var(--primary-2); background:rgba(255,255,255,0.08); }
+  .search-box input{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--text-main); font-family:inherit; font-size:13.5px;
+  }
+  .search-box svg{ color:var(--text-dim); flex-shrink:0; }
+
+  select.status-filter{
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--glass-border);
+    color:var(--text-main);
+    border-radius:12px;
+    padding:10px 16px;
+    font-family:inherit; font-size:13.5px;
+    outline:none; cursor:pointer;
+  }
+  select.status-filter option {
+    background: var(--bg-2);
+    color: var(--text-main);
+  }
+
+  .table-scroll{ overflow-x:auto; border-radius:14px; }
+  table{ width:100%; border-collapse:collapse; min-width:720px; }
+  thead th{
+    text-align:left; font-size:12.5px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--text-dim); font-weight:600;
+    padding:12px 16px; border-bottom:1px solid var(--glass-border);
+  }
+  tbody td{
+    padding:16px; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.06);
+    vertical-align:middle;
+  }
+  tbody tr{ transition: background .2s ease; opacity:0; animation: fadeSlideUp .45s ease forwards; }
+  tbody tr:hover{ background:rgba(255,255,255,0.04); }
+  .id-trx{ color:var(--primary-2); font-weight:600; }
+  .judul-buku{ font-weight:600; }
+  .penulis{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 12px; border-radius:999px;
+    font-size:12.5px; font-weight:600;
+  }
+  .badge.dikembalikan{ background:rgba(34,197,94,0.15); color:var(--success); }
+  .badge.dipinjam{ background:rgba(245,158,11,0.15); color:var(--warning); }
+  .badge.terlambat{ background:rgba(244,63,94,0.15); color:var(--danger); }
+  .badge-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  .btn-detail{
+    padding:8px 14px; border-radius:10px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--glass-border);
+    color:var(--text-main); font-size:12.5px; font-weight:500;
+    cursor:pointer; transition: all .2s ease;
+  }
+  .btn-detail:hover{ background:rgba(255,255,255,0.12); transform: translateY(-1px); }
+
+  .empty-state{
+    text-align:center; padding:50px 20px; color:var(--text-dim);
+  }
+
+  @keyframes fadeSlideUp{
+    from{ opacity:0; transform: translateY(18px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  @keyframes fadeSlideDown{
+    from{ opacity:0; transform: translateY(-14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="wrapper">
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="navbar-logo">S1</div>
+      <div>
+        <div class="navbar-title">SMK Negeri 1 Sukoharjo</div>
+        <div class="navbar-sub">Riwayat Peminjaman Digital</div>
+      </div>
+    </div>
+    <div class="navbar-right">
+      <div class="icon-btn" id="themeToggle" title="Ganti tema">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </div>
+      <a href="/perpustakaan" class="btn-back">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Kembali ke Katalog
+      </a>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>
+      <span class="header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </span>
+      Riwayat Peminjaman Buku
+    </h1>
+    <p>Daftar buku dan novel yang sedang atau pernah kamu pinjam.</p>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Transaksi</div>
+      <div class="stat-value blue" data-count="<%= stats.total %>">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sedang Dipinjam</div>
+      <div class="stat-value amber" data-count="<%= stats.dipinjam %>">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sudah Dikembalikan</div>
+      <div class="stat-value green" data-count="<%= stats.dikembalikan %>">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Terlambat</div>
+      <div class="stat-value rose" data-count="<%= stats.terlambat %>">0</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+    <div class="glass-card">
+      <h3>Distribusi Status</h3>
+      <div class="card-sub">Proporsi status seluruh transaksi peminjaman.</div>
+      <div class="chart-holder">
+        <canvas id="chartDistribusi"></canvas>
+        <div class="empty-chart" id="emptyDistribusi" style="display:none;">Belum ada data transaksi</div>
+      </div>
+    </div>
+    <div class="glass-card">
+      <h3>Aktivitas Peminjaman per Bulan</h3>
+      <div class="card-sub">Jumlah buku dipinjam tiap bulan.</div>
+      <div class="chart-holder">
+        <canvas id="chartAktivitas"></canvas>
+        <div class="empty-chart" id="emptyAktivitas" style="display:none;">Belum ada data transaksi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="glass-card table-card">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Cari judul buku atau ID transaksi..." />
+      </div>
+      <select class="status-filter" id="statusFilter">
+        <option value="semua">Semua Status</option>
+        <option value="dipinjam">Dipinjam</option>
+        <option value="dikembalikan">Dikembalikan</option>
+        <option value="terlambat">Terlambat</option>
+      </select>
+    </div>
+
+    <div class="table-scroll">
+      <table id="riwayatTable">
+        <thead>
+          <tr>
+            <th>ID Transaksi</th>
+            <th>Judul Buku</th>
+            <th>Tgl Pinjam</th>
+            <th>Batas Pengembalian</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (transaksi && transaksi.length > 0) { %>
+            <% transaksi.forEach(function(item, i){ %>
+              <tr data-status="<%= String(item.status).toLowerCase() %>" data-search="<%= (String(item.judul_buku || '') + ' ' + String(item.id_transaksi || '')).toLowerCase() %>" style="animation-delay: <%= 0.05 * i %>s;">
+                <td class="id-trx"><%= item.id_transaksi %></td>
+                <td>
+                  <div class="judul-buku"><%= item.judul_buku %></div>
+                  <div class="penulis"><%= item.penulis || 'Penulis Novel' %></div>
+                </td>
+                <td><%= item.tgl_pinjam %></td>
+                <td><%= item.batas_pengembalian %></td>
+                <td>
+                  <% if (item.status === 'dikembalikan') { %>
+                    <span class="badge dikembalikan"><span class="badge-dot"></span> Dikembalikan</span>
+                  <% } else if (item.status === 'terlambat') { %>
+                    <span class="badge terlambat"><span class="badge-dot"></span> Terlambat</span>
+                  <% } else { %>
+                    <span class="badge dipinjam"><span class="badge-dot"></span> Dipinjam</span>
+                  <% } %>
+                </td>
+                <td><button class="btn-detail" onclick="location.href='/riwayat/<%= item.id_transaksi %>'">Lihat Detail</button></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="<%= (transaksi && transaksi.length > 0) ? 'display:none;' : 'display:block;' %>">
+        <%= (transaksi && transaksi.length > 0) ? 'Tidak ada transaksi yang cocok dengan pencarian.' : 'Belum ada riwayat peminjaman.' %>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ================== COUNT-UP ANIMATION FOR STAT CARDS ==================
+  document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count, 10) || 0;
+    if (target === 0) {
+      el.textContent = "0";
+      return;
+    }
+    let current = 0;
+    const duration = 900;
+    const stepTime = Math.max(Math.floor(duration / target), 20);
+    const timer = setInterval(() => {
+      current += Math.ceil(target / (duration / stepTime));
+      if (current >= target) { 
+        current = target; 
+        clearInterval(timer); 
+      }
+      el.textContent = current;
+    }, stepTime);
+  });
+
+  // ================== DATA DARI SERVER (EJS -> JS) ==================
+  const distribusiStatus = <%- JSON.stringify(distribusiStatus || []) %>;
+  const aktivitasBulanan = <%- JSON.stringify(aktivitasBulanan || []) %>;
+
+  const glassTextColor = '#e5e7eb';
+  const glassGridColor = 'rgba(255,255,255,0.08)';
+
+  // ================== DONUT CHART: DISTRIBUSI STATUS ==================
+  const ctxDistribusi = document.getElementById('chartDistribusi');
+  const totalDistribusi = distribusiStatus.reduce((acc, curr) => acc + (curr.value || 0), 0);
+
+  if (!distribusiStatus.length || totalDistribusi === 0) {
+    ctxDistribusi.style.display = 'none';
+    document.getElementById('emptyDistribusi').style.display = 'flex';
+  } else {
+    new Chart(ctxDistribusi, {
+      type: 'doughnut',
+      data: {
+        labels: distribusiStatus.map(d => d.label),
+        datasets: [{
+          data: distribusiStatus.map(d => d.value),
+          backgroundColor: ['#f59e0b', '#22c55e', '#f43f5e', '#6366f1', '#38bdf8'],
+          borderColor: 'rgba(15,23,42,0.9)',
+          borderWidth: 3,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        animation: { animateRotate: true, animateScale: true, duration: 1200, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { position: 'bottom', labels: { color: glassTextColor, boxWidth: 10, padding: 16, font: { family: 'Poppins', size: 12 } } },
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.9)',
+            titleColor: '#fff', bodyColor: '#e5e7eb',
+            borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1,
+            padding: 10, cornerRadius: 10
+          }
+        }
+      }
+    });
+  }
+
+  // ================== LINE CHART: AKTIVITAS PER BULAN ==================
+  const ctxAktivitas = document.getElementById('chartAktivitas');
+  const totalAktivitas = aktivitasBulanan.reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
+
+  if (!aktivitasBulanan.length || totalAktivitas === 0) {
+    ctxAktivitas.style.display = 'none';
+    document.getElementById('emptyAktivitas').style.display = 'flex';
+  } else {
+    const gradient = ctxAktivitas.getContext('2d').createLinearGradient(0, 0, 0, 260);
+    gradient.addColorStop(0, 'rgba(99,102,241,0.45)');
+    gradient.addColorStop(1, 'rgba(99,102,241,0)');
+
+    new Chart(ctxAktivitas, {
+      type: 'line',
+      data: {
+        labels: aktivitasBulanan.map(d => d.bulan),
+        datasets: [{
+          label: 'Buku Dipinjam',
+          data: aktivitasBulanan.map(d => d.jumlah),
+          borderColor: '#818cf8',
+          backgroundColor: gradient,
+          borderWidth: 3,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#818cf8',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 1200, easing: 'easeOutQuart' },
+        scales: {
+          x: { ticks: { color: glassTextColor, font: { family: 'Poppins', size: 11.5 } }, grid: { color: 'transparent' } },
+          y: { beginAtZero: true, ticks: { color: glassTextColor, font: { family: 'Poppins', size: 11.5 } }, grid: { color: glassGridColor } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.9)',
+            titleColor: '#fff', bodyColor: '#e5e7eb',
+            borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1,
+            padding: 10, cornerRadius: 10
+          }
+        }
+      }
+    });
+  }
+
+  // ================== SEARCH + FILTER TABEL (BERFUNGSI) ==================
+  const searchInput = document.getElementById('searchInput');
+  const statusFilter = document.getElementById('statusFilter');
+  const rows = Array.from(document.querySelectorAll('#riwayatTable tbody tr'));
+  const emptyState = document.getElementById('emptyState');
+
+  function applyFilter(){
+    const q = searchInput.value.trim().toLowerCase();
+    const status = statusFilter.value.toLowerCase();
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const rowSearch = (row.dataset.search || '').toLowerCase();
+      const rowStatus = (row.dataset.status || '').toLowerCase();
+
+      const matchSearch = rowSearch.includes(q);
+      const matchStatus = status === 'semua' || rowStatus === status;
+      const show = matchSearch && matchStatus;
+
+      row.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+    });
+
+    if (rows.length > 0) {
+      if (visibleCount === 0) {
+        emptyState.textContent = 'Tidak ada transaksi yang cocok dengan pencarian.';
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+      }
+    }
+  }
+
+  if (searchInput && statusFilter) {
+    searchInput.addEventListener('input', applyFilter);
+    statusFilter.addEventListener('change', applyFilter);
+  }
+
+  // ================== TOGGLE TEMA (LIGHT / DARK GLASS) ==================
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+  });
+</script>
+
+</body>
+</html>

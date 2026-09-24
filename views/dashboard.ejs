@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<script>
+  // Set mode gelap/terang sebelum halaman digambar, supaya tidak berkedip.
+  (function () {
+    try {
+      var saved = localStorage.getItem('smkn1-theme');
+      var isDark = saved ? saved === 'dark' : true; // default: mode gelap
+      if (isDark) document.documentElement.classList.add('dark');
+    } catch (e) {}
+  })();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= schoolName %> — <%= schoolTagline %></title>
+<meta name="description" content="Portal resmi <%= schoolName %>. Perpustakaan Digital, fasilitas praktik setara industri, dan informasi akademik.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root {
+    --bg: #F5F8FC; --panel: #FFFFFF; --panel-2: #EEF2F9; --ink: #0B1220;
+    --ink-soft: #5B6577; --line: #DCE3EE;
+    --blue: #2563EB; --blue-soft: #2563EB; --cyan: #0891B2; --amber: #B45309;
+  }
+  html.dark {
+    --bg: #070B14; --panel: #101827; --panel-2: #0C1220; --ink: #EAF0FC;
+    --ink-soft: #93A1B8; --line: #1E293B;
+    --blue: #3B82F6; --blue-soft: #60A5FA; --cyan: #22D3EE; --amber: #F5A623;
+  }
+
+  html, body { background: var(--bg); }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: var(--ink);
+    transition: background-color .3s ease, color .3s ease;
+  }
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Latar kisi biru cetak (blueprint grid) */
+  .bg-grid {
+    background-image:
+      radial-gradient(circle, color-mix(in srgb, var(--ink) 16%, transparent) 1px, transparent 1px),
+      linear-gradient(color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px, 88px 88px, 88px 88px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 35%, transparent 100%);
+  }
+
+  .scan-line {
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    animation: scan 1.9s ease-out 1;
+  }
+  @keyframes scan {
+    from { transform: translateY(0); opacity: 1; }
+    to   { transform: translateY(440px); opacity: 0; }
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; border-radius: 999px;
+    padding: .4rem .9rem; font-size: .72rem; font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: .02em;
+    background: color-mix(in srgb, var(--blue) 12%, transparent);
+    color: var(--blue-soft);
+    border: 1px solid color-mix(in srgb, var(--blue) 26%, transparent);
+  }
+
+  .tag {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 3.4rem; border-radius: .55rem; padding: .35rem .5rem;
+    font-family: 'JetBrains Mono', monospace; font-size: .68rem; font-weight: 600;
+    letter-spacing: .03em; background: var(--panel-2); color: var(--blue-soft);
+    border: 1px solid var(--line);
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; border-radius: 999px;
+    padding: .85rem 1.7rem; font-size: .9rem; font-weight: 600; color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--blue) 65%, transparent);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .btn-primary:hover { transform: translateY(-2px); }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center; border-radius: 999px;
+    padding: .85rem 1.7rem; font-size: .9rem; font-weight: 600; color: var(--ink);
+    border: 1px solid var(--line);
+    transition: border-color .25s ease, transform .25s ease;
+  }
+  .btn-secondary:hover { border-color: var(--blue-soft); transform: translateY(-2px); }
+
+  /* Bingkai sudut teknik */
+  .frame-corners { position: relative; }
+  .frame-corners .corner { position: absolute; width: 18px; height: 18px; border-color: var(--blue-soft); pointer-events: none; }
+  .corner-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: .9rem; }
+  .corner-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; border-top-right-radius: .9rem; }
+  .corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; border-bottom-left-radius: .9rem; }
+  .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: .9rem; }
+  .program-card .corner { opacity: .5; transition: opacity .3s ease; }
+  .program-card:hover .corner { opacity: 1; }
+
+  .social-btn {
+    display: inline-flex; height: 2.5rem; width: 2.5rem; align-items: center; justify-content: center;
+    border-radius: .75rem; border: 1px solid var(--line); font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem; font-weight: 700; color: var(--ink-soft);
+    transition: border-color .25s ease, color .25s ease;
+  }
+  .social-btn:hover { border-color: var(--blue-soft); color: var(--blue-soft); }
+
+  .live-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+
+  .hero-in { opacity: 0; transform: translateY(14px); animation: hero-rise .7s ease forwards; }
+  .hero-in-delay { animation-delay: .15s; }
+  @keyframes hero-rise { to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scan-line, .live-dot, .hero-in { animation: none !important; opacity: 1 !important; transform: none !important; }
+  }
+
+  :focus-visible { outline: 2px solid var(--blue-soft); outline-offset: 3px; border-radius: 4px; }
+</style>
+</head>
+
+<body class="antialiased" style="background: var(--bg); color: var(--ink);">
+
+<!-- ============ NAVIGASI ============ -->
+<header class="sticky top-0 z-50 border-b backdrop-blur-md transition-colors duration-300" style="border-color: var(--line); background: color-mix(in srgb, var(--bg) 82%, transparent);">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
+    <a href="#beranda" class="flex items-center gap-3">
+      <span class="flex h-10 w-10 items-center justify-center rounded-xl font-display text-base font-bold text-white" style="background: linear-gradient(135deg, var(--blue), var(--cyan));">S1</span>
+      <span class="flex flex-col leading-tight">
+        <span class="font-display text-[15px] font-semibold"><%= schoolName %></span>
+        <span class="text-xs" style="color: var(--ink-soft);"><%= schoolTagline %></span>
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-8 md:flex" aria-label="Navigasi utama">
+      <a href="#perpustakaan" class="text-sm font-medium transition-colors hover:text-blue-500" style="color: var(--ink-soft);">Perpustakaan</a>
+      <a href="#fasilitas" class="text-sm font-medium transition-colors hover:text-blue-500" style="color: var(--ink-soft);">Fasilitas</a>
+      <a href="#prestasi" class="text-sm font-medium transition-colors hover:text-blue-500" style="color: var(--ink-soft);">Prestasi</a>
+      <a href="#kontak" class="text-sm font-medium transition-colors hover:text-blue-500" style="color: var(--ink-soft);">Kontak</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <button id="theme-toggle" type="button" aria-label="Ganti mode tampilan" aria-pressed="true"
+        class="relative inline-flex h-7 w-14 items-center rounded-full border transition-colors duration-300"
+        style="background: var(--panel-2); border-color: var(--line);">
+        <span id="theme-thumb" class="relative m-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full shadow transition-transform duration-300"
+          style="background: linear-gradient(135deg, var(--blue), var(--cyan));">
+          <svg id="icon-sun" viewBox="0 0 24 24" class="absolute h-3.5 w-3.5 fill-white transition-opacity duration-300">
+            <circle cx="12" cy="12" r="4"/>
+            <g stroke="white" stroke-width="2" stroke-linecap="round">
+              <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+              <line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/>
+              <line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/>
+            </g>
+          </svg>
+          <svg id="icon-moon" viewBox="0 0 24 24" class="absolute h-3.5 w-3.5 fill-white opacity-0 transition-opacity duration-300">
+            <path d="M20 14.5A8.5 8.5 0 1110.5 4a6.8 6.8 0 009.5 10.5z"/>
+          </svg>
+        </span>
+      </button>
+
+      <a href="/perpustakaan" class="hidden sm:inline-flex items-center rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5"
+        style="background: linear-gradient(135deg, var(--blue), var(--cyan));">Akses Perpustakaan Digital</a>
+
+      <button id="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" class="md:hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="h-6 w-6"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="hidden space-y-1 border-t px-6 py-4 md:hidden" style="border-color: var(--line);">
+    <a href="#perpustakaan" class="block rounded-lg px-3 py-2.5 text-sm font-medium" style="color: var(--ink-soft);">Perpustakaan</a>
+    <a href="#fasilitas" class="block rounded-lg px-3 py-2.5 text-sm font-medium" style="color: var(--ink-soft);">Fasilitas</a>
+    <a href="#prestasi" class="block rounded-lg px-3 py-2.5 text-sm font-medium" style="color: var(--ink-soft);">Prestasi</a>
+    <a href="#kontak" class="block rounded-lg px-3 py-2.5 text-sm font-medium" style="color: var(--ink-soft);">Kontak</a>
+    <a href="/perpustakaan" class="mt-2 block rounded-full px-4 py-2.5 text-center text-sm font-semibold text-white" style="background: linear-gradient(135deg, var(--blue), var(--cyan));">Perpustakaan Digital</a>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="beranda" class="relative overflow-hidden">
+  <div class="bg-grid pointer-events-none absolute inset-0"></div>
+  <div class="scan-line pointer-events-none absolute inset-x-0 top-0 h-px"></div>
+
+  <div class="relative mx-auto grid max-w-7xl gap-14 px-6 pb-20 pt-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-10 lg:pb-28 lg:pt-20">
+    <div class="hero-in">
+      <div class="mb-6 flex flex-wrap items-center gap-3">
+        <span class="badge">Akreditasi A</span>
+        <span class="h-4 w-px" style="background: var(--line);"></span>
+        <span class="badge">Portal Vokasi Resmi</span>
+      </div>
+
+      <h1 class="font-display text-4xl font-bold leading-[1.12] sm:text-5xl lg:text-[3.4rem]">
+        Belajar dari Praktik,
+        <span class="block bg-clip-text text-transparent" style="background-image: linear-gradient(135deg, var(--blue), var(--cyan));">Siap Kerja Sejak Sekolah.</span>
+      </h1>
+
+      <p class="mt-6 max-w-xl text-base leading-relaxed sm:text-lg" style="color: var(--ink-soft);">
+        <%= schoolName %> mendidik siswa lewat laboratorium, bengkel, studio kerja, dan fasilitas perpustakaan digital terkini untuk mendukung pembelajaran mandiri.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="#perpustakaan" class="btn-primary">Jelajahi Perpustakaan Digital</a>
+        <a href="#kontak" class="btn-secondary">Hubungi Kami</a>
+      </div>
+
+      <div class="mt-10 flex items-start gap-2 text-sm" style="color: var(--ink-soft);">
+        <svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-7.58 7-12A7 7 0 105 10c0 4.42 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span><%= schoolAddress %></span>
+      </div>
+    </div>
+
+    <div class="hero-in hero-in-delay">
+      <div class="frame-corners relative rounded-3xl border p-6 shadow-2xl" style="background: var(--panel); border-color: var(--line);">
+        <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+        <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-display text-sm font-semibold">Papan Kegiatan</p>
+            <p class="text-xs" style="color: var(--ink-soft);">Status sekolah hari ini</p>
+          </div>
+          <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background: color-mix(in srgb, var(--cyan) 15%, transparent); color: var(--cyan);">
+            <span class="live-dot h-1.5 w-1.5 rounded-full" style="background: var(--cyan);"></span> Aktif
+          </span>
+        </div>
+
+        <div class="mt-5 rounded-xl px-4 py-3" style="background: var(--panel-2);">
+          <p id="live-day" class="font-mono text-sm font-medium">—</p>
+          <p id="live-time" class="font-mono text-2xl font-semibold tracking-wide" style="color: var(--blue-soft);">--:--:--</p>
+        </div>
+
+        <div class="mt-5 space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="tag">LIB</span>
+            <span class="text-sm" style="color: var(--ink-soft);">Layanan Peminjaman E-Book Digital</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="tag">LAB</span>
+            <span class="text-sm" style="color: var(--ink-soft);">Praktik Laboratorium &amp; Komputer</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="tag">OTO</span>
+            <span class="text-sm" style="color: var(--ink-soft);">Servis dan Perawatan Otomotif</span>
+          </div>
+        </div>
+
+        <p class="mt-5 border-t pt-4 text-xs" style="border-color: var(--line); color: var(--ink-soft);">Jadwal dapat berubah sesuai kalender akademik.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STRIP STATISTIK ============ -->
+<section class="border-y" style="border-color: var(--line); background: var(--panel);">
+  <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-8 sm:grid-cols-4 lg:px-10">
+    <div>
+      <p class="font-display text-3xl font-bold">A</p>
+      <p class="mt-1 font-mono text-[11px] uppercase tracking-wider" style="color: var(--ink-soft);">Akreditasi</p>
+    </div>
+    <div>
+      <p class="font-display text-3xl font-bold">5.000+</p>
+      <p class="mt-1 font-mono text-[11px] uppercase tracking-wider" style="color: var(--ink-soft);">Koleksi Buku &amp; E-Book</p>
+    </div>
+    <div>
+      <p class="font-display text-3xl font-bold">5</p>
+      <p class="mt-1 font-mono text-[11px] uppercase tracking-wider" style="color: var(--ink-soft);">Program Keahlian</p>
+    </div>
+    <div>
+      <p class="font-display text-3xl font-bold">24/7</p>
+      <p class="mt-1 font-mono text-[11px] uppercase tracking-wider" style="color: var(--ink-soft);">Akses Katalog Digital</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PERPUSTAKAAN DIGITAL SMKN 1 SUKOHARJO ============ -->
+<section id="perpustakaan" class="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+  <div class="max-w-2xl">
+    <span class="tag mb-3">LITERASI DIGITAL</span>
+    <h2 class="font-display text-3xl font-bold sm:text-4xl">Perpustakaan SMKN 1 Sukoharjo</h2>
+    <p class="mt-4 text-base leading-relaxed" style="color: var(--ink-soft);">
+      Pusat sumber belajar modern berbasis digital dengan ribuan koleksi buku fisik, e-book keahlian vokasi, jurnal ilmiah, dan ruang baca nyaman ber-AC.
+    </p>
+  </div>
+
+  <div class="mt-12 grid gap-8 md:grid-cols-3">
+
+    <!-- Kartu 1: Koleksi E-Book & Jurnal -->
+    <article class="program-card group">
+      <div class="frame-corners relative aspect-[4/3] overflow-hidden rounded-2xl" style="background: linear-gradient(160deg, var(--panel-2), var(--panel));">
+        <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+        <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+        
+        <img src="/img/7.jpg" alt="Koleksi E-Book & Literatur" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        
+        <span class="absolute bottom-3 left-3 rounded-md px-2 py-1 font-mono text-[11px]" style="background: color-mix(in srgb, var(--bg) 80%, transparent); color: var(--ink);">
+          Ruang Literasi Digital
+        </span>
+      </div>
+      <h3 class="mt-5 font-display text-lg font-semibold">Koleksi E-Book &amp; Literatur Vokasi</h3>
+      <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-soft);">
+        Akses ribuan modul pembelajaran, e-book kejuruan, serta literatur teknik secara digital yang dapat dibaca kapan saja.
+      </p>
+      <a href="/perpustakaan" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold" style="color: var(--blue-soft);">
+        Jelajahi Koleksi
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </a>
+    </article>
+
+    <!-- Kartu 2: Ruang Baca & Area Diskusi -->
+    <article class="program-card group">
+      <div class="frame-corners relative aspect-[4/3] overflow-hidden rounded-2xl" style="background: linear-gradient(160deg, var(--panel-2), var(--panel));">
+        <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+        <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+        
+        <img src="/img/6.jpg" alt="Ruang Baca & Area Diskusi" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        
+        <span class="absolute bottom-3 left-3 rounded-md px-2 py-1 font-mono text-[11px]" style="background: color-mix(in srgb, var(--bg) 80%, transparent); color: var(--ink);">
+          Area Baca Ber-AC
+        </span>
+      </div>
+      <h3 class="mt-5 font-display text-lg font-semibold">Ruang Baca &amp; Diskusi Nyaman</h3>
+      <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-soft);">
+        Dilengkapi dengan fasilitas pendingin ruangan, akses Wi-Fi kencang, dan spot diskusi kelompok yang kondusif.
+      </p>
+      <a href="/perpustakaan" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold" style="color: var(--blue-soft);">
+        Lihat Fasilitas Perpustakaan
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </a>
+    </article>
+
+    <!-- Kartu 3: Layanan Peminjaman Digital -->
+    <article class="program-card group">
+      <div class="frame-corners relative aspect-[4/3] overflow-hidden rounded-2xl" style="background: linear-gradient(160deg, var(--panel-2), var(--panel));">
+        <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+        <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+        
+        <img src="/img/5.jpg" alt="Sistem Otomasi Perpustakaan" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        
+        <span class="absolute bottom-3 left-3 rounded-md px-2 py-1 font-mono text-[11px]" style="background: color-mix(in srgb, var(--bg) 80%, transparent); color: var(--ink);">
+          Sistem Otomasi Katalog
+        </span>
+      </div>
+      <h3 class="mt-5 font-display text-lg font-semibold">Sistem Peminjaman Otomatis</h3>
+      <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-soft);">
+        Cari judul buku dan lakukan peminjaman secara cepat melalui barcode kartu pelajar yang terintegrasi ke portal sekolah.
+      </p>
+      <a href="/perpustakaan" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold" style="color: var(--blue-soft);">
+        Cek Katalog Buku
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </a>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============ KENAPA MEMILIH KAMI ============ -->
+<section id="fasilitas" class="border-y" style="border-color: var(--line); background: var(--panel);">
+  <div class="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+    <div class="max-w-2xl">
+      <h2 class="font-display text-3xl font-bold sm:text-4xl">Kenapa Memilih Kami</h2>
+      <p class="mt-4 text-base leading-relaxed" style="color: var(--ink-soft);">Setiap program keahlian didukung ruang praktik, laboratorium, dan fasilitas perpustakaan digital yang mengikuti standar industri modern.</p>
+    </div>
+
+    <div class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2">
+      <div class="flex gap-4">
+        <span class="tag h-fit shrink-0">LIB-01</span>
+        <div>
+          <h3 class="font-display text-base font-semibold">Koleksi Buku &amp; E-Book Terlengkap</h3>
+          <p class="mt-1.5 text-sm leading-relaxed" style="color: var(--ink-soft);">Ribuan referensi buku keahlian vokasi dan literatur umum yang siap dipinjam atau diakses secara digital.</p>
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <span class="tag h-fit shrink-0">LAB-02</span>
+        <div>
+          <h3 class="font-display text-base font-semibold">Guru Praktisi Berpengalaman</h3>
+          <p class="mt-1.5 text-sm leading-relaxed" style="color: var(--ink-soft);">Dibimbing tenaga pendidik dengan latar belakang praktik langsung di bidang keahlian masing-masing.</p>
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <span class="tag h-fit shrink-0">WKS-01</span>
+        <div>
+          <h3 class="font-display text-base font-semibold">Kerja Sama Dunia Usaha &amp; Industri</h3>
+          <p class="mt-1.5 text-sm leading-relaxed" style="color: var(--ink-soft);">Program magang dan penyaluran kerja lewat kemitraan dengan perusahaan dan industri mitra sekolah.</p>
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <span class="tag h-fit shrink-0">SYS-01</span>
+        <div>
+          <h3 class="font-display text-base font-semibold">Portal Akademik &amp; Perpustakaan Digital</h3>
+          <p class="mt-1.5 text-sm leading-relaxed" style="color: var(--ink-soft);">Nilai, presensi, dan peminjaman buku dapat diakses guru, siswa, dan orang tua lewat satu portal terpadu.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA / PRESTASI ============ -->
+<section id="prestasi" class="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+  <div class="relative overflow-hidden rounded-3xl px-8 py-14 text-center sm:px-16" style="background: linear-gradient(135deg, var(--blue), var(--cyan));">
+    <div class="bg-grid absolute inset-0 opacity-20"></div>
+    <div class="relative">
+      <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Siap Bergabung dengan <%= schoolName %>?</h2>
+      <p class="mx-auto mt-4 max-w-xl text-white/90">Akses perpustakaan digital kami atau hubungi sekolah untuk informasi selengkapnya.</p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <a href="/perpustakaan" class="rounded-full bg-white px-6 py-3 text-sm font-semibold" style="color: var(--blue);">Buka Katalog Perpustakaan</a>
+        <a href="#kontak" class="rounded-full border border-white/50 px-6 py-3 text-sm font-semibold text-white">Hubungi Kami</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER / KONTAK ============ -->
+<footer id="kontak" class="border-t" style="border-color: var(--line);">
+  <div class="mx-auto max-w-7xl px-6 py-16 lg:px-10">
+    <div class="grid gap-12 md:grid-cols-[1.2fr_1fr_1fr]">
+      <div>
+        <a href="#beranda" class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl font-display text-base font-bold text-white" style="background: linear-gradient(135deg, var(--blue), var(--cyan));">S1</span>
+          <span class="flex flex-col leading-tight">
+            <span class="font-display text-[15px] font-semibold"><%= schoolName %></span>
+            <span class="text-xs" style="color: var(--ink-soft);"><%= schoolTagline %></span>
+          </span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed" style="color: var(--ink-soft);"><%= schoolAddress %></p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" aria-label="Instagram" class="social-btn">IG</a>
+          <a href="#" aria-label="YouTube" class="social-btn">YT</a>
+          <a href="#" aria-label="Facebook" class="social-btn">FB</a>
+        </div>
+      </div>
+
+      <div>
+        <p class="font-display text-sm font-semibold">Tautan</p>
+        <ul class="mt-4 space-y-2.5 text-sm" style="color: var(--ink-soft);">
+          <li><a href="#perpustakaan">Perpustakaan Digital</a></li>
+          <li><a href="#fasilitas">Fasilitas</a></li>
+          <li><a href="#prestasi">Prestasi</a></li>
+          <li><a href="/perpustakaan">Katalog Buku</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="font-display text-sm font-semibold">Kontak</p>
+        <ul class="mt-4 space-y-2.5 text-sm" style="color: var(--ink-soft);">
+          <li><%= schoolPhone %></li>
+          <li><%= schoolEmail %></li>
+          <li><%= schoolAddress %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 flex flex-col items-center justify-between gap-4 border-t pt-8 text-xs sm:flex-row" style="border-color: var(--line); color: var(--ink-soft);">
+      <p>© <%= new Date().getFullYear() %> <%= schoolName %>. Semua hak dilindungi.</p>
+      <p>Dibuat dengan bangga oleh siswa &amp; guru <%= schoolName %>.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Toggle mode gelap/terang
+  var html = document.documentElement;
+  var themeToggle = document.getElementById('theme-toggle');
+  var thumb = document.getElementById('theme-thumb');
+  var iconSun = document.getElementById('icon-sun');
+  var iconMoon = document.getElementById('icon-moon');
+
+  function syncThemeUI() {
+    var isDark = html.classList.contains('dark');
+    if (thumb) thumb.style.transform = isDark ? 'translateX(28px)' : 'translateX(0)';
+    if (iconSun) iconSun.style.opacity = isDark ? '0' : '1';
+    if (iconMoon) iconMoon.style.opacity = isDark ? '1' : '0';
+    if (themeToggle) themeToggle.setAttribute('aria-pressed', String(isDark));
+  }
+  syncThemeUI();
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function () {
+      html.classList.toggle('dark');
+      try { localStorage.setItem('smkn1-theme', html.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
+      syncThemeUI();
+    });
+  }
+
+  // Menu mobile
+  var menuToggle = document.getElementById('menu-toggle');
+  var mobileMenu = document.getElementById('mobile-menu');
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener('click', function () {
+      var willOpen = mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      menuToggle.setAttribute('aria-expanded', String(willOpen));
+    });
+  }
+
+  // Jam & hari langsung
+  var dayEl = document.getElementById('live-day');
+  var timeEl = document.getElementById('live-time');
+  var dayFormatter = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+  function tick() {
+    var now = new Date();
+    if (dayEl) dayEl.textContent = dayFormatter.format(now);
+    if (timeEl) timeEl.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
